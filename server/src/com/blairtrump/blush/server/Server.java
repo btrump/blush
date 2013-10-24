@@ -31,6 +31,7 @@ public class Server {
 			channel = connection.createChannel();
 
 			channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+			channel.queueDeclare(QUEUE_NAME+"_chat", false, false, false, null);
 
 			channel.basicQos(1);
 
@@ -47,9 +48,9 @@ public class Server {
 				BasicProperties props = delivery.getProperties();
 				BasicProperties replyProps = new BasicProperties.Builder()
 						.correlationId(props.getCorrelationId()).build();
-
+				String message = "";
 				try {
-					String message = new String(delivery.getBody(), "UTF-8");
+					message = new String(delivery.getBody(), "UTF-8");
 					System.out.printf("Got: %s\n", message);
 					response = "response+" + message;
 				} catch (Exception e) {
@@ -59,6 +60,7 @@ public class Server {
 				} finally {
 					channel.basicPublish("", props.getReplyTo(), replyProps,
 							response.getBytes("UTF-8"));
+					channel.basicPublish("", QUEUE_NAME+"_chat", null, message.getBytes());
 					channel.basicAck(delivery.getEnvelope().getDeliveryTag(),
 							false);
 				}
