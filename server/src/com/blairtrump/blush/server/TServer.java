@@ -7,14 +7,46 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.QueueingConsumer;
 
-
 /* For timestamps */
 import java.util.Date;
+import java.util.HashMap;
+import java.lang.reflect.*;
 
 public class TServer {
 	private final static int PORT = 5672;
 	private final static String HOST = "localhost";
 	private final static String QUEUE_NAME = "lobby";
+	private HashMap<Packet.Type, Method> functionHashMap;
+
+	public TServer() throws Exception {
+		functionHashMap = new HashMap<Packet.Type, Method>();
+		this.bindPacketMethods();
+	}
+
+	private void bindPacketMethods() throws Exception {
+//		Method m = TServer.class.getMethod("clientTalk", null);
+		this.functionHashMap.put(Packet.Type.CONNECT, 
+				TServer.class.getMethod("clientConnect", (Class<?>[]) null));
+		this.functionHashMap.put(Packet.Type.DISCONNECT,
+				TServer.class.getMethod("clientDisconnect", (Class<?>[]) null));
+		this.functionHashMap.put(Packet.Type.TALK,
+				TServer.class.getMethod("clientTalk", (Class<?>[]) null));
+	}
+
+	public void clientTalk() {
+		System.out.format("I am %s()\n",
+				Thread.currentThread().getStackTrace()[1].getMethodName());
+	}
+
+	public void clientConnect() {
+		System.out.format("I am %s()\n",
+				Thread.currentThread().getStackTrace()[1].getMethodName());
+	}
+
+	public void clientDisconnect() {
+		System.out.format("I am %s()\n",
+				Thread.currentThread().getStackTrace()[1].getMethodName());
+	}
 
 	public static void main(String[] args) throws Exception {
 		Connection connection = null;
@@ -29,7 +61,8 @@ public class TServer {
 			channel = connection.createChannel();
 
 			channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-			channel.queueDeclare(QUEUE_NAME+"_chat", false, false, false, null);
+			channel.queueDeclare(QUEUE_NAME + "_chat", false, false, false,
+					null);
 
 			channel.basicQos(1);
 
@@ -40,6 +73,8 @@ public class TServer {
 					.printf("[%s] Server: Listening for messages on queue '%s' on server at %s:%s...\n",
 							(new Date()).getTime(), QUEUE_NAME, HOST, PORT);
 
+			TServer server = new TServer();
+			
 			while (true) {
 				String response = null;
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
@@ -49,16 +84,17 @@ public class TServer {
 				String message = "";
 				try {
 					message = new String(delivery.getBody(), "UTF-8");
-					response = handleMessage(message);
+					response = handleMessage(server, message);
 					System.out.println(response);
 				} catch (Exception e) {
-					System.out.println("Error: " + e.toString());
+					System.err.println("Error: " + e.toString());
 					response = "";
 
 				} finally {
 					channel.basicPublish("", props.getReplyTo(), replyProps,
 							response.getBytes("UTF-8"));
-					channel.basicPublish("", QUEUE_NAME+"_chat", null, message.getBytes());
+					channel.basicPublish("", QUEUE_NAME + "_chat", null,
+							message.getBytes());
 					channel.basicAck(delivery.getEnvelope().getDeliveryTag(),
 							false);
 				}
@@ -85,6 +121,7 @@ public class TServer {
 			}
 		}
 	}
+
 	//
 	// class Worker implements Runnable {
 	// private String message;
@@ -102,12 +139,18 @@ public class TServer {
 	// // Packet packet = new Gson().fromJson(message, Packet.class);
 	// // System.out.println(packet);
 	// }
-
-	private static String handleMessage(String message) {
+	private static String handleMessage(TServer server, String message) throws Exception {
 		Packet packet = new Packet(message);
 		String response = "";
-		response = String.format("Packet valid? %s. Payload: %s.\n", packet.isValid(), packet.getPayload());
-		
+		if (packet.isValid()) {
+			try {
+				server.functionHashMap.get(packet.getType()).invoke(server, null);
+			} catch (Exception e) {
+				System.err.println("Handle message: " + e);
+			}
+		}
+		response = String.format("Payload: '%s'", packet.getPayload());
+
 		return response;
 	}
 }

@@ -4,8 +4,8 @@ package com.blairtrump.blush.server;
 import com.google.gson.Gson;
 
 public class Packet {
-	private enum Type {
-		CONNECT, DISCONNECT
+	public enum Type {
+		CONNECT, DISCONNECT, TALK
 	}
 
 	private Type type;
