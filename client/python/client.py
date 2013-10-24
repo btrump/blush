@@ -19,7 +19,8 @@ class Client(object):
         if self.corr_id == props.correlation_id:
             self.response = body
 
-    def call(self, n):
+    def call(self, message):
+        print " [x] Sending '%s'" % (message)
         self.response = None
         self.corr_id = str(uuid.uuid4())
         self.channel.basic_publish(exchange='',
@@ -28,17 +29,22 @@ class Client(object):
                                          reply_to = self.callback_queue,
                                          correlation_id = self.corr_id,
                                          ),
-                                   body=str(n))
+                                   body=str(message))
         while self.response is None:
             self.connection.process_data_events()
         return self.response
+    
+    def get_user_input(self):
+        prompt = '> '
+        message = raw_input(prompt)
+        return message
+    
+    def handle_message(self, message):
+        print " [.] Received %r" % message
+        
+    def start(self):
+        while(True):
+            self.handle_message(self.call(self.get_user_input()))
 
 client = Client()
-
-while (True):
-    prompt = '> '
-    message = raw_input(prompt)
-#     message = str(uuid.uuid4())
-    print " [x] Sending '%s'" % (message)
-    response = client.call(message)
-    print " [.] Got %r" % (response,)
+client.start()

@@ -10,13 +10,14 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.QueueingConsumer;
 
+
 /* For timestamps */
 import java.util.Date;
 
 public class TServer {
 	private final static int PORT = 5672;
 	private final static String HOST = "localhost";
-	private final static String QUEUE_NAME = "rpc_queue";
+	private final static String QUEUE_NAME = "lobby";
 
 	public static void main(String[] args) throws Exception {
 		Connection connection = null;
@@ -51,8 +52,7 @@ public class TServer {
 				String message = "";
 				try {
 					message = new String(delivery.getBody(), "UTF-8");
-					System.out.printf("Got: %s\n", message);
-					response = "response+" + message;
+					response = handleMessage(message);
 				} catch (Exception e) {
 					System.out.println("Error: " + e.toString());
 					response = "";
@@ -104,4 +104,17 @@ public class TServer {
 	// // Packet packet = new Gson().fromJson(message, Packet.class);
 	// // System.out.println(packet);
 	// }
+
+	private static String handleMessage(String message) {
+		String response = "";
+		if(message.equals("connect")) {
+			System.out.printf("Connect string received.  Transferring client from lobby to Worker\n");
+			response = "Connecting you to Worker";
+		} else {
+			System.out.printf("Got: '%s'\n", message);
+			response = String.format("You sent '%s'", message);
+		}
+		
+		return response;
+	}
 }
