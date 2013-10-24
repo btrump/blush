@@ -1,8 +1,5 @@
 package com.blairtrump.blush.server;
 
-/* Gson for JSON en/decoding */
-//import com.google.gson.Gson;
-
 /* RabbitMQ libraries */
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.ConnectionFactory;
@@ -53,6 +50,7 @@ public class TServer {
 				try {
 					message = new String(delivery.getBody(), "UTF-8");
 					response = handleMessage(message);
+					System.out.println(response);
 				} catch (Exception e) {
 					System.out.println("Error: " + e.toString());
 					response = "";
@@ -106,14 +104,9 @@ public class TServer {
 	// }
 
 	private static String handleMessage(String message) {
+		Packet packet = new Packet(message);
 		String response = "";
-		if(message.equals("connect")) {
-			System.out.printf("Connect string received.  Transferring client from lobby to Worker\n");
-			response = "Connecting you to Worker";
-		} else {
-			System.out.printf("Got: '%s'\n", message);
-			response = String.format("You sent '%s'", message);
-		}
+		response = String.format("Packet valid? %s. Payload: %s.\n", packet.isValid(), packet.getPayload());
 		
 		return response;
 	}

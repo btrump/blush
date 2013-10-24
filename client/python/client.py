@@ -36,11 +36,19 @@ class Client(object):
     
     def get_user_input(self):
         prompt = '> '
-        message = raw_input(prompt)
+        message = self.encode_message(raw_input(prompt))
         return message
     
     def handle_message(self, message):
         print " [.] Received %r" % message
+        
+    def encode_message(self, m):
+        import json
+        import uuid
+        id = m.split(' ')[0]
+        message = ' '.join(m.split(' ')[1:])
+        packet = {'id':id, 'rand':str(uuid.uuid4()), 'message':message}
+        return json.dumps(packet)
         
     def start(self):
         while(True):
