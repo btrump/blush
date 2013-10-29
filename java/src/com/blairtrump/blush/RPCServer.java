@@ -1,4 +1,4 @@
-package com.blairtrump.blush.server;
+package com.blairtrump.blush;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;

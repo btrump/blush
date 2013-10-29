@@ -45,9 +45,9 @@ class Client(object):
     def encode_message(self, m):
         import json
         import uuid
-        id = m.split(' ')[0]
+        type = m.split(' ')[0]
         message = ' '.join(m.split(' ')[1:])
-        packet = {'id':id, 'rand':str(uuid.uuid4()), 'message':message}
+        packet = {'type':type, 'rand':str(uuid.uuid4()), 'message':message}
         return json.dumps(packet)
         
     def start(self):
