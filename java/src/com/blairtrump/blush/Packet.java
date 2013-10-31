@@ -1,7 +1,6 @@
 package com.blairtrump.blush;
 
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
 
 public class Packet {
 	public enum Type {
@@ -12,21 +11,25 @@ public class Packet {
 	private String payload;
 	private int type;
 	private boolean valid = false;
+	
+	public Packet(){}
 
-	public Packet(String payload) {
+	public String toJson() {
 		Gson gson = new Gson();
+		return gson.toJson(this);
+	}
+	
+	public static Packet fromJson(String json) {
+		Gson gson = new Gson();
+		Packet packet = new Packet();
 		try {
-			Packet packet = gson.fromJson(payload, Packet.class);
-//			this.type = Packet.Type.values()[Integer.parseInt(packet.type.to)];
-			this.type = packet.type;
-			this.payload = payload;
-			this.message = packet.message;
-			this.valid = true;
+			packet = gson.fromJson(json, Packet.class);
 		} catch (java.lang.ArrayIndexOutOfBoundsException e) {
-			System.err.format("ArrayIndexOutOfBoundsException: %s", payload);
+			System.err.format("ArrayIndexOutOfBoundsException: %s", json);
 		} finally {
-			this.payload = payload;
+			packet.payload = json;
 		}
+		return packet;
 	}
 
 	public String getMessage() {
@@ -39,6 +42,10 @@ public class Packet {
 
 	public boolean isValid() {
 		return this.valid;
+	}
+	
+	public void setValidity(boolean validity) {
+		this.valid = validity;
 	}
 
 	public void setMessage(String message) {
