@@ -11,31 +11,66 @@ import com.rabbitmq.client.QueueingConsumer;
 import java.util.Date;
 
 public class Server {
-	private final static int PORT = 5672;
-	private final static String HOST = "localhost";
-	private final static String QUEUE_NAME = "lobby";
+	private enum Status {
+		IDLE, LISTENING, SHUTTING_DOWN, INITALIZING
+	}
+	private Status status;
+	private int port = 5672;
+	private String host = "localhost";
+	private String queue_name = "lobby";
 	private Connection connection = null;
 	private Channel channel = null;
+	private ConnectionFactory factory = new ConnectionFactory();
 	private QueueingConsumer consumer;
+	
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+	
+	public Status getStatus() {
+		return this.status;
+	}
 
-	public Server() throws Exception {
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+		this.factory.setPort(port);
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+		this.factory.setHost(host);
+	}
+
+	public String getQueue_name() {
+		return queue_name;
+	}
+
+	public void setQueue_name(String queue_name) {
+		this.queue_name = queue_name;
 	}
 
 	public void initialize() throws Exception {
-		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost(HOST);
-		factory.setPort(PORT);
+		this.setHost(host);
+		this.setPort(port);
 
 		// TODO: try/catch NoRouteToHostException, ConnectException
 		connection = factory.newConnection();
 		channel = connection.createChannel();
-		channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+		channel.queueDeclare(queue_name, false, false, false, null);
 		channel.basicQos(1);
 		consumer = new QueueingConsumer(channel);
-		channel.basicConsume(QUEUE_NAME, false, consumer);
+		channel.basicConsume(queue_name, false, consumer);
 		System.out
 				.format("[%s] Server: Listening for messages on queue '%s' on server at %s:%s...\n",
-						(new Date()).getTime(), QUEUE_NAME, HOST, PORT);
+						(new Date()).getTime(), queue_name, host, port);
 	}
 
 	private String handleMessage(QueueingConsumer.Delivery delivery)
@@ -58,6 +93,7 @@ public class Server {
 	public void listen() {
 		try {
 			while (true) {
+				this.status = Status.LISTENING;
 				String response = null;
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 				BasicProperties props = delivery.getProperties();

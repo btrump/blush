@@ -3,10 +3,6 @@ package com.blairtrump.blush;
 import com.google.gson.*;
 
 public class Packet {
-	public enum Type {
-		APPLICATION, SYSTEM;
-	}
-
 	private String message;
 	private String payload;
 	private int type;
