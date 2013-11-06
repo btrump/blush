@@ -14,7 +14,7 @@ public class Server {
 	private enum Status {
 		IDLE, LISTENING, SHUTTING_DOWN, INITALIZING
 	}
-	private Status status;
+	private Status status = Status.IDLE;
 	private int port = 5672;
 	private String host = "localhost";
 	private String queue_name = "lobby";
@@ -56,10 +56,22 @@ public class Server {
 	public void setQueue_name(String queue_name) {
 		this.queue_name = queue_name;
 	}
-
+	
 	public void initialize() throws Exception {
+		String host = "localhost";
+		int port = 5672;
+		String queue_name = "lobby";
+		this.initialize(host, port, queue_name);
+	}
+
+	public void initialize(String host, int port, String lobby) throws Exception {
+		this.status = Status.IDLE;
+		this.connection = null;
+		this.channel = null;
+		this.factory = new ConnectionFactory();
 		this.setHost(host);
 		this.setPort(port);
+		this.queue_name = "lobby";
 
 		// TODO: try/catch NoRouteToHostException, ConnectException
 		connection = factory.newConnection();
