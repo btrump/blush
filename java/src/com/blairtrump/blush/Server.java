@@ -7,7 +7,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.QueueingConsumer;
 
-/* For timestamps */
 import java.util.Date;
 
 public class Server {

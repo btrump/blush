@@ -30,18 +30,22 @@ public class Client {
 	}
 	
 	public String call(String message) throws Exception {
+		Packet packet = new Packet();
+		packet.setMessage(message);
 		String response = null;
 		String corrId = UUID.randomUUID().toString();
 
 		BasicProperties props = new BasicProperties.Builder()
 				.correlationId(corrId).replyTo(replyQueueName).build();
 
-		channel.basicPublish("", requestQueueName, props, message.getBytes());
+		System.out.format("\t[>] Sending message '%s' as packet '%s'\n", message, packet.toJson());
+		channel.basicPublish("", requestQueueName, props, packet.toJson().getBytes());
 
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			if (delivery.getProperties().getCorrelationId().equals(corrId)) {
 				response = new String(delivery.getBody(), "UTF-8");
+				System.out.format("\t[<] Got '%s'\n", response);
 				break;
 			}
 		}
@@ -64,15 +68,13 @@ public class Client {
 
 	public static void main(String[] argv) {
 		Client client = null;
-		String response = null;
-		String message;
 		try {
 			client = new Client();
+			String response;
+			String message;
 			while(true) {
 				message = client.prompt();
-				System.out.format("\t[>] Sending '%s'\n", message);
 				response = client.call(message);
-				System.out.format("\t[<] Got '%s'\n", response);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

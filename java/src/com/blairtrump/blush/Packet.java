@@ -8,8 +8,6 @@ public class Packet {
 	private int type;
 	private boolean valid = false;
 	
-	public Packet(){}
-
 	public String toJson() {
 		Gson gson = new Gson();
 		return gson.toJson(this);

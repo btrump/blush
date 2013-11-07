@@ -12,8 +12,15 @@ Components
 To Do
 =====
 [X] Write tests for Server class
-[ ] Model Client class after RPCClient from RabbitMQ tutorial
-[ ] Pass messages between client and server
+
+[X] Model Client class after RPCClient from RabbitMQ tutorial
+
+[X] Pass messages between client and server
+
+[ ] Write tests for Client class
+
 [ ] Make server listener threaded
+
 [ ] Allow for status polling
+
 [ ] Attach arbitrary clients to server and create token pass/listen model
