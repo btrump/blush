@@ -159,18 +159,13 @@ public class Server {
 				BasicProperties props = delivery.getProperties();
 				BasicProperties replyProps = new BasicProperties.Builder()
 						.correlationId(props.getCorrelationId()).build();
-				try {
-					response = handleMessage(delivery);
-					System.out.format("[%s] Got message: \n", response);
-				} catch (Exception e) {
-					System.err.println("Error: " + e.toString());
-					response = "";
-				} finally {
-					channel.basicPublish("", props.getReplyTo(), replyProps,
-							response.getBytes("UTF-8"));
-					channel.basicAck(delivery.getEnvelope().getDeliveryTag(),
-							false);
-				}
+				long timestamp = (new Date()).getTime();
+				response = handleMessage(delivery);
+				System.out
+						.format("[%s] Got message: %s\n", timestamp, response);
+				channel.basicPublish("", props.getReplyTo(), replyProps,
+						response.getBytes("UTF-8"));
+				channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 			}
 		} catch (Exception e) {
 			System.err.println(e);

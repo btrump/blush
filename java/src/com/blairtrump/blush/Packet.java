@@ -20,9 +20,9 @@ public class Packet {
 		Packet packet = new Packet();
 		try {
 			packet = gson.fromJson(json, Packet.class);
-		} catch (java.lang.ArrayIndexOutOfBoundsException e) {
-			System.err.format("ArrayIndexOutOfBoundsException: %s", json);
-		} 
+		} catch (Exception e) {
+			System.err.println("Packet::fromJson(): " + e);
+		}
 		packet.setPayload(json);
 		return packet;
 	}
