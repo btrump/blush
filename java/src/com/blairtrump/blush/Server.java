@@ -29,7 +29,7 @@ public class Server {
 		return connected;
 	}
 
-	public void Server() {
+	public Server() {
 		setStatus(Status.UNINITIALIZED);
 	}
 
