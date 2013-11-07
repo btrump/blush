@@ -22,9 +22,8 @@ public class Packet {
 			packet = gson.fromJson(json, Packet.class);
 		} catch (java.lang.ArrayIndexOutOfBoundsException e) {
 			System.err.format("ArrayIndexOutOfBoundsException: %s", json);
-		} finally {
-			packet.payload = json;
-		}
+		} 
+		packet.setPayload(json);
 		return packet;
 	}
 
@@ -50,6 +49,14 @@ public class Packet {
 
 	public void setType(int type) {
 		this.type = type;
+	}
+	
+	public void setPayload(String payload) {
+		this.payload = payload;
+	}
+	
+	public String getPayload() {
+		return payload;
 	}
 	
 	public String toString() {
