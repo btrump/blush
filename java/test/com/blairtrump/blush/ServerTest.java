@@ -10,10 +10,13 @@ public class ServerTest {
 	@Test
 	public void testNoMessageBrokerAvailable() throws Exception {
 		Server server = new Server();
-		server.initialize();
-		server.listen();
+		String host = "fake.example.com";
+		int port = -1;
+		String queue_name = testString;
+		server.initialize(host, port, queue_name);
+		assertFalse(server.connect());
 	}
-	
+
 	@Test
 	public void testInitializeAndGettersAndSetters() throws Exception {
 		Server server = new Server();
@@ -21,15 +24,22 @@ public class ServerTest {
 		int port = 5672;
 		String queue_name = "lobby";
 		server.initialize(host, port, queue_name);
-		
+
 		boolean allMembersEqual = false;
-		if(server.getHost().equals(host) && server.getPort() == port && server.getQueue_name().equals(queue_name))
+		if (server.getHost().equals(host) && server.getPort() == port
+				&& server.getQueue_name().equals(queue_name)) {
 			allMembersEqual = true;
+		}
 		assertTrue(allMembersEqual);
 	}
 
-	@Test
-	public void testListen() {
-		fail("Not yet implemented");
-	}
+//	Can't poll a listening server unless listener is on a separate thread
+//	@Test
+//	public void testListen() throws Exception {
+//		Server server = new Server();
+//		server.initialize();
+//		server.connect();
+//		server.listen();
+//		assertEquals(server.getStatus(), Server.Status.LISTENING);
+//	}
 }
