@@ -1,8 +1,5 @@
 package com.blairtrump.blush;
 
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import java.util.UUID;
@@ -10,24 +7,39 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Date;
 
-public class Client {
-	private Connection connection;
-	private Channel channel;
-	private String requestQueueName = "lobby";
-	private String replyQueueName;
-	private QueueingConsumer consumer;
+public class Client extends NetworkCommunicator {
+	private String reply_queue_name;
 
 	public Client() throws Exception {
-		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost("localhost");
-		connection = factory.newConnection();
-		channel = connection.createChannel();
-
-		replyQueueName = channel.queueDeclare().getQueue();
-		consumer = new QueueingConsumer(channel);
-		channel.basicConsume(replyQueueName, true, consumer);
+		super();
 	}
-	
+
+	public boolean connect() throws Exception {
+		boolean success = false;
+		setStatus(NetworkStatus.CONNECTING);
+		try {
+			connection = factory.newConnection();
+			channel = connection.createChannel();
+			reply_queue_name = channel.queueDeclare().getQueue();
+			consumer = new QueueingConsumer(channel);
+			channel.basicConsume(reply_queue_name, true, consumer);
+			success = true;
+		} catch (java.net.ConnectException e) {
+			System.err.println("connect(): " + e);
+			success = false;
+		} catch (java.net.NoRouteToHostException e) {
+			System.err.println("connect(): " + e);
+			success = false;
+		} catch (java.net.UnknownHostException e) {
+			System.err.println("Server::connect(): " + e);
+			success = false;
+		} finally {
+			setStatus(NetworkStatus.IDLE);
+		}
+
+		return success;
+	}
+
 	public String call(String message) throws Exception {
 		Packet packet = new Packet();
 		packet.setMessage(message);
@@ -35,10 +47,11 @@ public class Client {
 		String corrId = UUID.randomUUID().toString();
 
 		BasicProperties props = new BasicProperties.Builder()
-				.correlationId(corrId).replyTo(replyQueueName).build();
+				.correlationId(corrId).replyTo(reply_queue_name).build();
 
-		System.out.format("\t[>] Sending message '%s' as packet '%s'\n", message, packet.toJson());
-		channel.basicPublish("", requestQueueName, props, packet.toJson().getBytes());
+		System.out.format("\t[>] Sending message '%s' as packet '%s'\n",
+				message, packet.toJson());
+		channel.basicPublish("", queue_name, props, packet.toJson().getBytes());
 
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
@@ -55,10 +68,11 @@ public class Client {
 	public void close() throws Exception {
 		connection.close();
 	}
-	
+
 	public String prompt() throws Exception {
 		long timestamp = (new Date()).getTime();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				System.in));
 		String prompt = String.format("[%s] blush.Client~# ", timestamp);
 
 		System.out.print(prompt);
@@ -69,11 +83,16 @@ public class Client {
 		Client client = null;
 		try {
 			client = new Client();
-			String response;
-			String message;
-			while(true) {
-				message = client.prompt();
-				response = client.call(message);
+			client.initialize();
+			if (client.connect()) {
+				String response;
+				String message;
+				while (true) {
+					message = client.prompt();
+					response = client.call(message);
+				}
+			} else {
+				System.err.println("Could not connect");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

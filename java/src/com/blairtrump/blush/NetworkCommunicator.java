@@ -8,19 +8,18 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class NetworkCommunicator {
-
 	private NetworkStatus status = NetworkStatus.IDLE;
 	private int port = 5672;
 	private String host = "localhost";
-	private String queue_name = "lobby";
+	protected String queue_name = "lobby";
 	protected Connection connection = null;
 	protected Channel channel = null;
-	private ConnectionFactory factory = new ConnectionFactory();
+	protected ConnectionFactory factory = new ConnectionFactory();
 	protected QueueingConsumer consumer;
 	private boolean connected;
 
 	public NetworkCommunicator() {
-		super();
+		setStatus(NetworkStatus.UNINITIALIZED);
 	}
 
 	public boolean isConnected() {
@@ -83,32 +82,6 @@ public class NetworkCommunicator {
 
 	public void disconnect() {
 		this.connected = false;
-	}
-
-	public boolean connect() throws Exception {
-		boolean success = false;
-		setStatus(NetworkStatus.CONNECTING);
-		try {
-			connection = factory.newConnection();
-			channel = connection.createChannel();
-			channel.queueDeclare(queue_name, false, false, false, null);
-			channel.basicQos(1);
-			consumer = new QueueingConsumer(channel);
-			channel.basicConsume(queue_name, false, consumer);
-			success = true;
-		} catch (java.net.ConnectException e) {
-			System.err.println("connect(): " + e);
-			success = false;
-		} catch (java.net.NoRouteToHostException e) {
-			System.err.println("connect(): " + e);
-			success = false;
-		} catch (java.net.UnknownHostException e) {
-			System.err.println("Server::connect(): " + e);
-			success = false;
-		} finally {
-			setStatus(NetworkStatus.IDLE);
-		}
-		return success;
 	}
 
 	public void reportStatus() {

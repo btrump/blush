@@ -7,7 +7,33 @@ import java.util.Date;
 
 public class Server extends NetworkCommunicator {
 	public Server() {
-		setStatus(NetworkStatus.UNINITIALIZED);
+		super();
+	}
+
+	public boolean connect() throws Exception {
+		boolean success = false;
+		setStatus(NetworkStatus.CONNECTING);
+		try {
+			connection = factory.newConnection();
+			channel = connection.createChannel();
+			channel.queueDeclare(queue_name, false, false, false, null);
+			channel.basicQos(1);
+			consumer = new QueueingConsumer(channel);
+			channel.basicConsume(queue_name, false, consumer);
+			success = true;
+		} catch (java.net.ConnectException e) {
+			System.err.println("connect(): " + e);
+			success = false;
+		} catch (java.net.NoRouteToHostException e) {
+			System.err.println("connect(): " + e);
+			success = false;
+		} catch (java.net.UnknownHostException e) {
+			System.err.println("Server::connect(): " + e);
+			success = false;
+		} finally {
+			setStatus(NetworkStatus.IDLE);
+		}
+		return success;
 	}
 
 	public void listen() {
