@@ -9,7 +9,7 @@ public class ServerTest {
 
 	@Test
 	public void testNoMessageBrokerAvailable() throws Exception {
-		Server server = new Server();
+		NetworkCommunicator server = new Server();
 		String host = "fake.example.com";
 		int port = -1;
 		String queue_name = testString;
@@ -19,7 +19,7 @@ public class ServerTest {
 
 	@Test
 	public void testInitializeAndGettersAndSetters() throws Exception {
-		Server server = new Server();
+		NetworkCommunicator server = new Server();
 		String host = "localhost";
 		int port = 5672;
 		String queue_name = "lobby";

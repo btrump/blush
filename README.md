@@ -19,6 +19,8 @@ To Do
 
 [ ] Write tests for Client class
 
+[ ] Refactor client and server to extend same class
+
 [ ] Make server listener threaded
 
 [ ] Allow for status polling
