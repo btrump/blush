@@ -16,6 +16,8 @@ public class NetworkCommunicator {
 	protected Channel channel = null;
 	protected ConnectionFactory factory = new ConnectionFactory();
 	protected QueueingConsumer consumer;
+	protected String reply_queue_name;
+
 	private boolean connected;
 
 	public NetworkCommunicator() {
@@ -99,7 +101,36 @@ public class NetworkCommunicator {
 		System.out.println(message);
 	}
 
-	protected String handleMessage(QueueingConsumer.Delivery delivery) throws Exception {
+	public boolean connect() throws Exception {
+		boolean success = false;
+		setStatus(NetworkStatus.CONNECTING);
+		try {
+			connection = factory.newConnection();
+			channel = connection.createChannel();
+			if (this.getClass().equals(Server.class)) {
+				channel.queueDeclare(queue_name, false, false, false, null);
+				channel.basicQos(1);
+				consumer = new QueueingConsumer(channel);
+				channel.basicConsume(queue_name, false, consumer);
+			} else {
+				reply_queue_name = channel.queueDeclare().getQueue();
+				consumer = new QueueingConsumer(channel);
+				channel.basicConsume(reply_queue_name, true, consumer);
+			}
+			success = true;
+		} catch (java.net.ConnectException | java.net.NoRouteToHostException e) {
+			System.err.println("Server::connect(): Could not reach server - "
+					+ e);
+		} catch (java.io.IOException e) {
+			System.err.println("Server::connect(): Could not connect - " + e);
+		} finally {
+			setStatus(NetworkStatus.IDLE);
+		}
+		return success;
+	}
+
+	protected String handleMessage(QueueingConsumer.Delivery delivery)
+			throws Exception {
 		String payload = new String(delivery.getBody());
 		Packet packet = Packet.fromJson(payload);
 		String response = "";
@@ -111,8 +142,7 @@ public class NetworkCommunicator {
 			}
 		}
 		response = packet.toJson();
-	
+
 		return response;
 	}
-
 }

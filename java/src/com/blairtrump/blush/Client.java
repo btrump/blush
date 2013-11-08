@@ -8,36 +8,8 @@ import java.io.InputStreamReader;
 import java.util.Date;
 
 public class Client extends NetworkCommunicator {
-	private String reply_queue_name;
-
 	public Client() throws Exception {
 		super();
-	}
-
-	public boolean connect() throws Exception {
-		boolean success = false;
-		setStatus(NetworkStatus.CONNECTING);
-		try {
-			connection = factory.newConnection();
-			channel = connection.createChannel();
-			reply_queue_name = channel.queueDeclare().getQueue();
-			consumer = new QueueingConsumer(channel);
-			channel.basicConsume(reply_queue_name, true, consumer);
-			success = true;
-		} catch (java.net.ConnectException e) {
-			System.err.println("connect(): " + e);
-			success = false;
-		} catch (java.net.NoRouteToHostException e) {
-			System.err.println("connect(): " + e);
-			success = false;
-		} catch (java.net.UnknownHostException e) {
-			System.err.println("Server::connect(): " + e);
-			success = false;
-		} finally {
-			setStatus(NetworkStatus.IDLE);
-		}
-
-		return success;
 	}
 
 	public String call(String message) throws Exception {
@@ -91,8 +63,6 @@ public class Client extends NetworkCommunicator {
 					message = client.prompt();
 					response = client.call(message);
 				}
-			} else {
-				System.err.println("Could not connect");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
