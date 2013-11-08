@@ -17,7 +17,7 @@ To Do
 
 [X] Pass messages between client and server
 
-[ ] Write tests for Client class
+[X] Write tests for Client class
 
 [X] Refactor client and server to extend same class
 
