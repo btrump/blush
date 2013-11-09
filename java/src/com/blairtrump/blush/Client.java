@@ -17,14 +17,11 @@ public class Client extends NetworkCommunicator {
 		packet.setMessage(message);
 		String response = null;
 		String corrId = UUID.randomUUID().toString();
-
 		BasicProperties props = new BasicProperties.Builder()
 				.correlationId(corrId).replyTo(reply_queue_name).build();
-
 		System.out.format("\t[>] Sending message '%s' as packet '%s'\n",
 				message, packet.toJson());
 		channel.basicPublish("", queue_name, props, packet.toJson().getBytes());
-
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			if (delivery.getProperties().getCorrelationId().equals(corrId)) {
@@ -33,7 +30,6 @@ public class Client extends NetworkCommunicator {
 				break;
 			}
 		}
-
 		return response;
 	}
 
@@ -46,7 +42,6 @@ public class Client extends NetworkCommunicator {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				System.in));
 		String prompt = String.format("[%s] blush.Client~# ", timestamp);
-
 		System.out.print(prompt);
 		return reader.readLine();
 	}

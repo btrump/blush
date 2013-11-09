@@ -118,11 +118,10 @@ public class NetworkCommunicator {
 				channel.basicConsume(reply_queue_name, true, consumer);
 			}
 			success = true;
-		} catch (java.net.ConnectException | java.net.NoRouteToHostException e) {
-			System.err.println("Server::connect(): Could not reach server - "
-					+ e);
 		} catch (java.io.IOException e) {
-			System.err.println("Server::connect(): Could not connect - " + e);
+			System.err.format(
+					"%s::connect(): Could not reach RabbitMQ broker - %s",
+					this.getClass(), e);
 		} finally {
 			setStatus(NetworkStatus.IDLE);
 		}
