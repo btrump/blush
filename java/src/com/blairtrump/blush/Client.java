@@ -2,6 +2,7 @@ package com.blairtrump.blush;
 
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.AMQP.BasicProperties;
+
 import java.util.UUID;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,10 +12,40 @@ public class Client extends NetworkCommunicator {
 	public Client() throws Exception {
 		super();
 	}
+	
+	public Packet generator(int i) {
+		System.out.println(i);
+		String message = null;
+		Packet.Type type = null;
+		boolean valid;
+		
+		switch(i) {
+		case 0:
+			message = "This is a test system message";
+			type = Packet.Type.SYSTEM;
+			valid = true;
+			break;
+		case 1:
+			message = "This is a test application message";
+			type = Packet.Type.APPLICATION;
+			valid = true;
+			break;
+		default:
+			message = "You passed an invalid argument to the generator";
+			type = Packet.Type.INVALID;
+			 valid = false;
+			 break;
+		}
+		
+		Packet packet = new Packet(type, message);
+		packet.setValidity(valid);
+		return packet;
+	}
 
 	public String call(String message) throws Exception {
-		Packet packet = new Packet();
-		packet.setMessage(message);
+//		Packet packet = new Packet();
+		Packet packet = generator(Integer.parseInt(message));
+//		packet.setMessage(message);
 		String response = null;
 		String corrId = UUID.randomUUID().toString();
 		BasicProperties props = new BasicProperties.Builder()
@@ -52,11 +83,10 @@ public class Client extends NetworkCommunicator {
 			client = new Client();
 			client.initialize();
 			if (client.connect()) {
-				String response;
 				String message;
 				while (true) {
 					message = client.prompt();
-					response = client.call(message);
+					client.call(message);
 				}
 			}
 		} catch (Exception e) {

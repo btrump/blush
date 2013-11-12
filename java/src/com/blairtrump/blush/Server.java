@@ -23,7 +23,7 @@ public class Server extends NetworkCommunicator {
 				long timestamp = (new Date()).getTime();
 				response = handleMessage(delivery);
 				System.out
-						.format("[%s] Got message: %s\n", timestamp, response);
+						.format("[%s] %s::listen() - Got message: %s\n", timestamp, this.getClass(), response);
 				channel.basicPublish("", props.getReplyTo(), replyProps,
 						response.getBytes("UTF-8"));
 				channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);

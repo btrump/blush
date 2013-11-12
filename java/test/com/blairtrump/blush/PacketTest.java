@@ -10,7 +10,7 @@ public class PacketTest {
 	@Test
 	public void testFromJson() {
 		final String rand = "726ca2be-1c80-4c49-85ee-0e66ab160d5a";
-		final int type = 1;
+		final Packet.Type type = Packet.Type.values()[0];
 		final String testJson = "{\"rand\": \"" + rand + "\","
 				+ "\"message\": \"" + PacketTest.testMessage + "\","
 				+ "\"type\": \"" + type + "\"}";
@@ -47,8 +47,10 @@ public class PacketTest {
 	@Test
 	public void testGetAndSetType() {
 		Packet packet = new Packet();
-		packet.setType(0);
-		assertEquals(0, packet.getType());
+		for(Packet.Type type : Packet.Type.values()) {
+			packet.setType(type);
+			assertEquals(type, packet.getType());
+		}
 	}
 
 	@Test

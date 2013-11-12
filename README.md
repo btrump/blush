@@ -21,6 +21,8 @@ To Do
 
 [X] Refactor client and server to extend same class
 
+[ ] Develop packet types
+
 [ ] Make server listener threaded
 
 [ ] Allow for status polling
