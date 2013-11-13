@@ -17,7 +17,6 @@ public class NetworkCommunicator {
 	protected ConnectionFactory factory = new ConnectionFactory();
 	protected QueueingConsumer consumer;
 	protected String reply_queue_name;
-	protected Date date;
 
 	private boolean connected;
 
@@ -65,7 +64,6 @@ public class NetworkCommunicator {
 
 	public void initialize() throws Exception {
 		setStatus(NetworkStatus.INITALIZING);
-		date = new Date();
 		String host = "localhost";
 		int port = 5672;
 		String queue_name = "lobby";
@@ -90,7 +88,7 @@ public class NetworkCommunicator {
 
 	public void reportStatus() {
 		String message;
-		long timestamp = date.getTime();
+		long timestamp = new Date().getTime();
 		switch (getStatus()) {
 		case LISTENING:
 			message = String
@@ -130,17 +128,17 @@ public class NetworkCommunicator {
 		return success;
 	}
 
-	protected String handleMessage(QueueingConsumer.Delivery delivery)
-			throws Exception {
+	protected String handleMessage(QueueingConsumer.Delivery delivery) {
 		String payload = new String(delivery.getBody());
 		Packet packet = Packet.fromJson(payload);
 		String response = "";
-		long timestamp = date.getTime();
+		long timestamp = new Date().getTime();
 		if (packet.isValid()) {
 			try {
 				response = String.format(
-						"[%s] %s::handeMessage() - Got packet: %s", timestamp,
+						"[%s] %s::handleMessage() - Got packet: %s", timestamp,
 						this.getClass().getName(), packet);
+				response = packet.toString();
 			} catch (Exception e) {
 				System.err.format("[%s] %s::handleMessage() - %s", timestamp, this.getClass().getCanonicalName(), e);
 			}

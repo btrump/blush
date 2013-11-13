@@ -1,23 +1,42 @@
+/*
+ * Packet types
+ * System -- for client/server system communication, such as:
+ * 		- CONNECT
+ * 		- DISCONNECT
+ * 		- STATUS
+ * 		- TALK
+ * 		- PING
+ * 
+ * Application -- Pass-through of JSON message to application using Blush for messaging
+ * 
+ * Protocol?
+ * 
+ */
 package com.blairtrump.blush;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
 
 public class Packet {
 	public enum Type {
 		SYSTEM, APPLICATION, INVALID
 	}
 
-	private String message;
-	private String payload;
+	public enum Command {
+		CONNECT, DISCONNECT, STATUS, TALK, PING, PASSTHROUGH
+	}
+
 	private Type type;
+	private String message;
+	private Command command;
 	private boolean valid = false;
 
 	public Packet() {
 	}
 
-	public Packet(Packet.Type type, String message) {
+	public Packet(Packet.Type type, String message, Command command) {
 		this.type = type;
 		this.message = message;
+		this.command = command;
 	}
 
 	public String toJson() {
@@ -34,7 +53,6 @@ public class Packet {
 		} catch (Exception e) {
 			System.err.println("Packet::fromJson(): " + e);
 		}
-		packet.setPayload(json);
 		return packet;
 	}
 
@@ -61,17 +79,13 @@ public class Packet {
 	public void setType(Type type) {
 		this.type = type;
 	}
-
-	public void setPayload(String payload) {
-		this.payload = payload;
-	}
-
-	public String getPayload() {
-		return payload;
+	
+	public boolean isSystem() {
+		return getType().equals(Type.SYSTEM);
 	}
 
 	public String toString() {
-		return String.format("%s (%s): %s", this.type, this.isValid() ? "V"
-				: "NV", this.message);
+		String validity = isValid() ? "V" : "NV";
+		return String.format("%s %s (%s): %s", type, command, validity, message);
 	}
 }

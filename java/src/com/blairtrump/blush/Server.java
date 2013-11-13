@@ -1,9 +1,9 @@
 package com.blairtrump.blush;
 
+import java.util.Date;
+
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.QueueingConsumer;
-
-import java.util.Date;
 
 public class Server extends NetworkCommunicator {
 	public Server() {
@@ -20,10 +20,10 @@ public class Server extends NetworkCommunicator {
 				BasicProperties props = delivery.getProperties();
 				BasicProperties replyProps = new BasicProperties.Builder()
 						.correlationId(props.getCorrelationId()).build();
-				long timestamp = (new Date()).getTime();
+				long timestamp = new Date().getTime();
 				response = handleMessage(delivery);
-				System.out
-						.format("[%s] %s::listen() - Got message: %s\n", timestamp, this.getClass(), response);
+				System.out.format("[%s] %s::listen() - Got message: %s\n",
+						timestamp, this.getClass().getCanonicalName(), response);
 				channel.basicPublish("", props.getReplyTo(), replyProps,
 						response.getBytes("UTF-8"));
 				channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);

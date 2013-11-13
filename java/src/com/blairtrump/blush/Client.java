@@ -3,10 +3,10 @@ package com.blairtrump.blush;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 
+import java.util.Date;
 import java.util.UUID;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.Date;
 
 public class Client extends NetworkCommunicator {
 	public Client() throws Exception {
@@ -17,12 +17,15 @@ public class Client extends NetworkCommunicator {
 		System.out.println(i);
 		String message = null;
 		Packet.Type type = null;
+		Packet.Command command = null;
 		boolean valid;
 		
 		switch(i) {
 		case 0:
+			// Test system status report
 			message = "This is a test system message";
 			type = Packet.Type.SYSTEM;
+			command = Packet.Command.STATUS;
 			valid = true;
 			break;
 		case 1:
@@ -37,15 +40,13 @@ public class Client extends NetworkCommunicator {
 			 break;
 		}
 		
-		Packet packet = new Packet(type, message);
+		Packet packet = new Packet(type, message, command);
 		packet.setValidity(valid);
 		return packet;
 	}
 
 	public String call(String message) throws Exception {
-//		Packet packet = new Packet();
 		Packet packet = generator(Integer.parseInt(message));
-//		packet.setMessage(message);
 		String response = null;
 		String corrId = UUID.randomUUID().toString();
 		BasicProperties props = new BasicProperties.Builder()
@@ -69,7 +70,7 @@ public class Client extends NetworkCommunicator {
 	}
 
 	public String prompt() throws Exception {
-		long timestamp = (new Date()).getTime();
+		long timestamp = new Date().getTime();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				System.in));
 		String prompt = String.format("[%s] blush.Client~# ", timestamp);
