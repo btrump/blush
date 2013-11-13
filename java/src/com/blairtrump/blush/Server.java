@@ -8,6 +8,18 @@ public class Server extends NetworkCommunicator {
 		super();
 	}
 
+	public Server(NetworkCommunicator nc) {
+		port = nc.getPort();
+		host = nc.getHost();
+		status = nc.getStatus();
+		queue_name = nc.getQueue_name();
+		connection = nc.connection;
+		channel = nc.channel;
+		factory = nc.factory;
+		consumer = nc.consumer;
+		reply_queue_name = nc.reply_queue_name;
+	}
+
 	public void listen() {
 		try {
 			while (true) {

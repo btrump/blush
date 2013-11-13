@@ -8,9 +8,9 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class NetworkCommunicator {
-	private NetworkStatus status = NetworkStatus.IDLE;
-	private int port = 5672;
-	private String host = "localhost";
+	protected NetworkStatus status = NetworkStatus.IDLE;
+	protected int port = 5672;
+	protected String host = "localhost";
 	protected String queue_name = "lobby";
 	protected Connection connection = null;
 	protected Channel channel = null;
@@ -23,7 +23,7 @@ public class NetworkCommunicator {
 	public NetworkCommunicator() {
 		setStatus(NetworkStatus.UNINITIALIZED);
 	}
-
+	
 	public void log(String message) {
 		String callingMethod = Thread.currentThread().getStackTrace()[2]
 				.getMethodName() + "()";

@@ -13,6 +13,6 @@ To Do
 =====
 [ ] Make server listener threaded
 
-[ ] Attach arbitrary clients to server and create token pass/listen model
+[ ] Create map of connected clients on server
 
-[ ]
+[ ] Attach arbitrary clients to server and create token pass/listen model

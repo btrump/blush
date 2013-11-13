@@ -13,6 +13,18 @@ public class Client extends NetworkCommunicator {
 		super();
 	}
 	
+	public Client(NetworkCommunicator nc) {
+		port = nc.getPort();
+		host = nc.getHost();
+		status = nc.getStatus();
+		queue_name = nc.getQueue_name();
+		connection = nc.connection;
+		channel = nc.channel;
+		factory = nc.factory;
+		consumer = nc.consumer;
+		reply_queue_name = nc.reply_queue_name;
+	}
+	
 	public Packet generator(int i) {
 		System.out.println(i);
 		String message = null;
