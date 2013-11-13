@@ -8,13 +8,13 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class NetworkCommunicator {
-	protected NetworkStatus status = NetworkStatus.IDLE;
-	protected int port = 5672;
-	protected String host = "localhost";
-	protected String queue_name = "lobby";
-	protected Connection connection = null;
-	protected Channel channel = null;
-	protected ConnectionFactory factory = new ConnectionFactory();
+	protected NetworkStatus status;
+	protected int port;
+	protected String host;
+	protected String queue_name;
+	protected Connection connection;
+	protected Channel channel;
+	protected ConnectionFactory factory;
 	protected QueueingConsumer consumer;
 	protected String reply_queue_name;
 
@@ -23,15 +23,15 @@ public class NetworkCommunicator {
 	public NetworkCommunicator() {
 		setStatus(NetworkStatus.UNINITIALIZED);
 	}
-	
+
 	public void log(String message) {
 		String callingMethod = Thread.currentThread().getStackTrace()[2]
 				.getMethodName() + "()";
 		String[] canonicalClassName = Thread.currentThread().getStackTrace()[2]
 				.getClassName().split("\\.");
 		String className = canonicalClassName[canonicalClassName.length - 1];
-		System.out.format("[%s] %s::%s - %s\n", new Date().getTime(),
-				className, callingMethod, message);
+		System.out.format("[%s] %s::%s - %s\n", new Date().getTime(), className,
+				callingMethod, message);
 	}
 
 	public boolean isConnected() {
