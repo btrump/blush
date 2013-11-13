@@ -1,16 +1,8 @@
 /*
  * Packet types
  * System -- for client/server system communication, such as:
- * 		- CONNECT
- * 		- DISCONNECT
- * 		- STATUS
- * 		- TALK
- * 		- PING
- * 
+ * 		- CONNECT, DISCONNECT, STATUS, TALK, PING, PASSTHROUGH
  * Application -- Pass-through of JSON message to application using Blush for messaging
- * 
- * Protocol?
- * 
  */
 package com.blairtrump.blush;
 
@@ -62,6 +54,10 @@ public class Packet {
 
 	public Packet.Type getType() {
 		return type;
+	}
+	
+	public Packet.Command getCommand() {
+		return command;
 	}
 
 	public boolean isValid() {
