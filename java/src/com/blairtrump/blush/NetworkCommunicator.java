@@ -24,6 +24,16 @@ public class NetworkCommunicator {
 		setStatus(NetworkStatus.UNINITIALIZED);
 	}
 
+	public void log(String message) {
+		String callingMethod = Thread.currentThread().getStackTrace()[2]
+				.getMethodName() + "()";
+		String[] canonicalClassName = Thread.currentThread().getStackTrace()[2]
+				.getClassName().split("\\.");
+		String className = canonicalClassName[canonicalClassName.length - 1];
+		System.out.format("[%s] %s::%s - %s\n", new Date().getTime(),
+				className, callingMethod, message);
+	}
+
 	public boolean isConnected() {
 		return connected;
 	}
@@ -86,19 +96,18 @@ public class NetworkCommunicator {
 		this.connected = false;
 	}
 
-	public void reportStatus() {
+	public String reportStatus() {
 		String message;
-		long timestamp = new Date().getTime();
 		switch (getStatus()) {
 		case LISTENING:
-			message = String
-					.format("[%s] Listening for messages on queue '%s' on server at %s:%s...",
-							timestamp, queue_name, host, port);
+			message = String.format(
+					"Listening for messages on queue '%s' on server at %s:%s",
+					queue_name, host, port);
 			break;
 		default:
 			message = "What?";
 		}
-		System.out.println(message);
+		return message;
 	}
 
 	public boolean connect() throws Exception {
@@ -132,15 +141,34 @@ public class NetworkCommunicator {
 		String payload = new String(delivery.getBody());
 		Packet packet = Packet.fromJson(payload);
 		String response = "";
-		long timestamp = new Date().getTime();
+		String message = String.format("Got packet: %s", packet.toString());
+		log(message);
 		if (packet.isValid()) {
 			try {
-				response = String.format(
-						"[%s] %s::handleMessage() - Got packet: %s", timestamp,
-						this.getClass().getName(), packet);
-				response = packet.toString();
+				// if system command, call appropriate function
+				if (packet.isSystem()) {
+					switch (packet.getCommand()) {
+					case CONNECT:
+						break;
+					case DISCONNECT:
+						break;
+					case PASSTHROUGH:
+						break;
+					case PING:
+						break;
+					case STATUS:
+						response = reportStatus();
+						break;
+					case TALK:
+						break;
+					default:
+						break;
+					}
+				}
+				// if application, automatically pass message through
 			} catch (Exception e) {
-				System.err.format("[%s] %s::handleMessage() - %s", timestamp, this.getClass().getCanonicalName(), e);
+				System.err.format("[%s] %s::handleMessage() - %s", new Date()
+						.getTime(), this.getClass().getCanonicalName(), e);
 			}
 		}
 

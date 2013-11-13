@@ -1,7 +1,5 @@
 package com.blairtrump.blush;
 
-import java.util.Date;
-
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.QueueingConsumer;
 
@@ -14,16 +12,17 @@ public class Server extends NetworkCommunicator {
 		try {
 			while (true) {
 				setStatus(NetworkStatus.LISTENING);
-				reportStatus();
+				log(reportStatus());
 				String response = null;
+				String message = null;
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 				BasicProperties props = delivery.getProperties();
 				BasicProperties replyProps = new BasicProperties.Builder()
 						.correlationId(props.getCorrelationId()).build();
-				long timestamp = new Date().getTime();
 				response = handleMessage(delivery);
-				System.out.format("[%s] %s::listen() - Got message: %s\n",
-						timestamp, this.getClass().getCanonicalName(), response);
+				message = String.format("Returning message: '%s'",
+						response);
+				log(message);
 				channel.basicPublish("", props.getReplyTo(), replyProps,
 						response.getBytes("UTF-8"));
 				channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);

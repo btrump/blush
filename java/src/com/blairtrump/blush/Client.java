@@ -23,7 +23,7 @@ public class Client extends NetworkCommunicator {
 		switch(i) {
 		case 0:
 			// Test system status report
-			message = "This is a test system message";
+			message = "I am requesting a status report";
 			type = Packet.Type.SYSTEM;
 			command = Packet.Command.STATUS;
 			valid = true;
