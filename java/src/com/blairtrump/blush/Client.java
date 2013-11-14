@@ -59,7 +59,7 @@ public class Client extends NetworkCommunicator {
 			break;
 		}
 
-		Packet packet = new Packet(type, message, command);
+		Packet packet = new Packet(type, message, command, this.getId());
 		packet.setValidity(valid);
 		return packet;
 	}

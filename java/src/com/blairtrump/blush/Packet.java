@@ -6,7 +6,10 @@
  */
 package com.blairtrump.blush;
 
+import java.util.Date;
+
 import com.google.gson.Gson;
+import com.rabbitmq.client.QueueingConsumer;
 
 public class Packet {
 	public enum Type {
@@ -21,14 +24,45 @@ public class Packet {
 	private String message;
 	private Command command;
 	private boolean valid = false;
+	private Integer senderId;
+	private Long timestamp;
+	private String replyQueue;
+
+	public Integer getSenderId() {
+		return senderId;
+	}
+
+	public void setSenderId(Integer senderId) {
+		this.senderId = senderId;
+	}
 
 	public Packet() {
 	}
+	
+	public Packet(QueueingConsumer.Delivery delivery) {
+		String payload = new String(delivery.getBody());
+		Packet packet = Packet.fromJson(payload);
+		this.type = packet.type;
+		this.message = packet.message;
+		this.command = packet.command;
+		this.senderId = packet.senderId;
+		this.timestamp = delivery.getProperties().getTimestamp().getTime();
+		this.replyQueue = delivery.getProperties().getReplyTo();
+	}
 
-	public Packet(Packet.Type type, String message, Command command) {
+	public String getReplyQueue() {
+		return replyQueue;
+	}
+
+	public void setReplyQueue(String replyQueue) {
+		this.replyQueue = replyQueue;
+	}
+
+	public Packet(Packet.Type type, String message, Command command, Integer senderId) {
 		this.type = type;
 		this.message = message;
 		this.command = command;
+		this.senderId = senderId;
 	}
 
 	public String toJson() {

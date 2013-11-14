@@ -12,7 +12,8 @@ public class NetworkCommunicatorTest {
 		String host = "fake.example.com";
 		int port = -1;
 		String queue_name = testString;
-		communicator.initialize(host, port, queue_name);
+		int id = 0;
+		communicator.initialize(host, port, queue_name, id);
 		return communicator;
 	}
 	
@@ -22,7 +23,8 @@ public class NetworkCommunicatorTest {
 		String host = "localhost";
 		int port = 5672;
 		String queue_name = "lobby";
-		server.initialize(host, port, queue_name);
+		int id = 0;
+		server.initialize(host, port, queue_name, id);
 
 		boolean allMembersEqual = false;
 		if (server.getHost().equals(host) && server.getPort() == port

@@ -1,6 +1,7 @@
 package com.blairtrump.blush;
 
 import java.util.Date;
+import java.util.Random;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -8,110 +9,21 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class NetworkCommunicator {
-	protected NetworkStatus status;
-	protected int port;
-	protected String host;
-	protected String queue;
-	protected Connection connection;
 	protected Channel channel;
-	protected ConnectionFactory factory;
-	protected QueueingConsumer consumer;
-	protected String replyQueue;
-
 	private boolean connected;
+	protected Connection connection;
+	protected QueueingConsumer consumer;
+	protected ConnectionFactory factory;
+	protected String host;
+	protected Integer port;
+	protected String queue;
+	protected String replyQueue;
+	protected Integer id;
+
+	protected NetworkStatus status;
 
 	public NetworkCommunicator() {
 		setStatus(NetworkStatus.UNINITIALIZED);
-	}
-
-	public void log(String message) {
-		String callingMethod = Thread.currentThread().getStackTrace()[2]
-				.getMethodName() + "()";
-		String[] canonicalClassName = Thread.currentThread().getStackTrace()[2]
-				.getClassName().split("\\.");
-		String className = canonicalClassName[canonicalClassName.length - 1];
-		System.out.format("[%s] %s::%s - %s\n", new Date().getTime(),
-				className, callingMethod, message);
-	}
-
-	public boolean isConnected() {
-		return connected;
-	}
-
-	public void setStatus(NetworkStatus status) {
-		this.status = status;
-	}
-
-	public NetworkStatus getStatus() {
-		return this.status;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
-		this.factory.setPort(port);
-	}
-
-	public String getHost() {
-		return host;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-		this.factory.setHost(host);
-	}
-
-	public String getQueue() {
-		return queue;
-	}
-
-	public String getReplyQueue() {
-		return replyQueue;
-	}
-
-	public void setQueue(String queue) {
-		this.queue = queue;
-	}
-
-	public void initialize() throws Exception {
-		setStatus(NetworkStatus.INITALIZING);
-		String host = "localhost";
-		int port = 5672;
-		String queue_name = "lobby";
-		this.initialize(host, port, queue_name);
-		setStatus(NetworkStatus.IDLE);
-	}
-
-	public void initialize(String host, int port, String lobby) {
-		setStatus(NetworkStatus.INITALIZING);
-		this.connection = null;
-		this.channel = null;
-		this.factory = new ConnectionFactory();
-		this.setHost(host);
-		this.setPort(port);
-		this.queue = "lobby";
-		setStatus(NetworkStatus.IDLE);
-	}
-
-	public void disconnect() {
-		this.connected = false;
-	}
-
-	public String reportStatus() {
-		String message;
-		switch (getStatus()) {
-		case LISTENING:
-			message = String.format(
-					"Listening for messages on queue '%s' on server at %s:%s",
-					queue, host, port);
-			break;
-		default:
-			message = "What?";
-		}
-		return message;
 	}
 
 	public boolean connect() throws Exception {
@@ -150,40 +62,101 @@ public class NetworkCommunicator {
 		return success;
 	}
 
-	protected String handleMessage(QueueingConsumer.Delivery delivery) {
-		String payload = new String(delivery.getBody());
-		Packet packet = Packet.fromJson(payload);
-		String response = "";
-		String message = String.format("Got packet: %s", packet.toString());
-		log(message);
-		if (packet.isValid()) {
-			try {
-				if (packet.isSystem()) {
-					switch (packet.getCommand()) {
-					case CONNECT:
-						break;
-					case DISCONNECT:
-						break;
-					case PASSTHROUGH:
-						break;
-					case PING:
-						break;
-					case STATUS:
-						response = reportStatus();
-						break;
-					case TALK:
-						break;
-					default:
-						break;
-					}
-				}
-				// if application, automatically pass message through
-			} catch (Exception e) {
-				System.err.format("[%s] %s::handleMessage() - %s", new Date()
-						.getTime(), this.getClass().getCanonicalName(), e);
-			}
-		}
+	public void disconnect() {
+		this.connected = false;
+	}
 
-		return response;
+	public String getHost() {
+		return host;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public String getQueue() {
+		return queue;
+	}
+
+	public String getReplyQueue() {
+		return replyQueue;
+	}
+
+	public NetworkStatus getStatus() {
+		return this.status;
+	}
+
+	public void initialize() throws Exception {
+		String host = "localhost";
+		int port = 5672;
+		String queue_name = "lobby";
+		int id = new Random(new Date().getTime()).nextInt();
+		this.initialize(host, port, queue_name, id);
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public void initialize(String host, int port, String lobby, int id) {
+		setStatus(NetworkStatus.INITALIZING);
+		this.connection = null;
+		this.channel = null;
+		this.factory = new ConnectionFactory();
+		this.setHost(host);
+		this.setPort(port);
+		this.queue = "lobby";
+		setId(id);
+		setStatus(NetworkStatus.IDLE);
+	}
+
+	public boolean isConnected() {
+		return connected;
+	}
+
+	public void log(String message) {
+		String callingMethod = Thread.currentThread().getStackTrace()[2]
+				.getMethodName() + "()";
+		String[] canonicalClassName = Thread.currentThread().getStackTrace()[2]
+				.getClassName().split("\\.");
+		String className = canonicalClassName[canonicalClassName.length - 1];
+		System.out.format("[%s] %s::%s - %s\n", new Date().getTime(),
+				className, callingMethod, message);
+	}
+
+	public String reportStatus() {
+		String message;
+		switch (getStatus()) {
+		case LISTENING:
+			message = String.format(
+					"Listening for messages on queue '%s' on server at %s:%s",
+					queue, host, port);
+			break;
+		default:
+			message = "What?";
+		}
+		return message;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+		this.factory.setHost(host);
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+		this.factory.setPort(port);
+	}
+
+	public void setQueue(String queue) {
+		this.queue = queue;
+	}
+
+	public void setStatus(NetworkStatus status) {
+		this.status = status;
 	}
 }
