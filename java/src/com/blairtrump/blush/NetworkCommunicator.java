@@ -11,12 +11,12 @@ public class NetworkCommunicator {
 	protected NetworkStatus status;
 	protected int port;
 	protected String host;
-	protected String queue_name;
+	protected String queue;
 	protected Connection connection;
 	protected Channel channel;
 	protected ConnectionFactory factory;
 	protected QueueingConsumer consumer;
-	protected String reply_queue_name;
+	protected String replyQueue;
 
 	private boolean connected;
 
@@ -30,8 +30,8 @@ public class NetworkCommunicator {
 		String[] canonicalClassName = Thread.currentThread().getStackTrace()[2]
 				.getClassName().split("\\.");
 		String className = canonicalClassName[canonicalClassName.length - 1];
-		System.out.format("[%s] %s::%s - %s\n", new Date().getTime(), className,
-				callingMethod, message);
+		System.out.format("[%s] %s::%s - %s\n", new Date().getTime(),
+				className, callingMethod, message);
 	}
 
 	public boolean isConnected() {
@@ -64,12 +64,16 @@ public class NetworkCommunicator {
 		this.factory.setHost(host);
 	}
 
-	public String getQueue_name() {
-		return queue_name;
+	public String getQueue() {
+		return queue;
 	}
 
-	public void setQueue_name(String queue_name) {
-		this.queue_name = queue_name;
+	public String getReplyQueue() {
+		return replyQueue;
+	}
+
+	public void setQueue(String queue) {
+		this.queue = queue;
 	}
 
 	public void initialize() throws Exception {
@@ -88,7 +92,7 @@ public class NetworkCommunicator {
 		this.factory = new ConnectionFactory();
 		this.setHost(host);
 		this.setPort(port);
-		this.queue_name = "lobby";
+		this.queue = "lobby";
 		setStatus(NetworkStatus.IDLE);
 	}
 
@@ -102,7 +106,7 @@ public class NetworkCommunicator {
 		case LISTENING:
 			message = String.format(
 					"Listening for messages on queue '%s' on server at %s:%s",
-					queue_name, host, port);
+					queue, host, port);
 			break;
 		default:
 			message = "What?";
@@ -116,17 +120,23 @@ public class NetworkCommunicator {
 		try {
 			connection = factory.newConnection();
 			channel = connection.createChannel();
+			String message = null;
 			if (this.getClass().equals(Server.class)) {
-				channel.queueDeclare(queue_name, false, false, false, null);
+				channel.queueDeclare(queue, false, false, false, null);
 				channel.basicQos(1);
 				consumer = new QueueingConsumer(channel);
-				channel.basicConsume(queue_name, false, consumer);
+				channel.basicConsume(queue, false, consumer);
+				message = String.format("Connected to rabbitmq@%s:%s, consuming queue '%s'", getHost(), getPort(), getQueue());
 			} else {
-				reply_queue_name = channel.queueDeclare().getQueue();
+				replyQueue = channel.queueDeclare().getQueue();
 				consumer = new QueueingConsumer(channel);
-				channel.basicConsume(reply_queue_name, true, consumer);
+				channel.basicConsume(replyQueue, true, consumer);
+				message = String
+						.format("Connected to rabbitmq@%s:%s, consuming queue '%s' and reply queue '%s'",
+								getHost(), getPort(), getQueue(), getReplyQueue());
 			}
 			success = true;
+			log(message);
 		} catch (java.io.IOException e) {
 			System.err.format(
 					"%s::connect(): Could not reach RabbitMQ broker - %s",

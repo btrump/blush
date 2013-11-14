@@ -17,12 +17,12 @@ public class Client extends NetworkCommunicator {
 		port = nc.getPort();
 		host = nc.getHost();
 		status = nc.getStatus();
-		queue_name = nc.getQueue_name();
+		queue = nc.getQueue();
 		connection = nc.connection;
 		channel = nc.channel;
 		factory = nc.factory;
 		consumer = nc.consumer;
-		reply_queue_name = nc.reply_queue_name;
+		replyQueue = nc.replyQueue;
 	}
 	
 	public Packet generator(int i) {
@@ -62,10 +62,10 @@ public class Client extends NetworkCommunicator {
 		String response = null;
 		String corrId = UUID.randomUUID().toString();
 		BasicProperties props = new BasicProperties.Builder()
-				.correlationId(corrId).replyTo(reply_queue_name).build();
+				.correlationId(corrId).replyTo(replyQueue).build();
 		System.out.format("\t[>] Sending message '%s' as packet '%s'\n",
 				message, packet.toJson());
-		channel.basicPublish("", queue_name, props, packet.toJson().getBytes());
+		channel.basicPublish("", queue, props, packet.toJson().getBytes());
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			if (delivery.getProperties().getCorrelationId().equals(corrId)) {
@@ -78,7 +78,9 @@ public class Client extends NetworkCommunicator {
 	}
 
 	public void close() throws Exception {
+		log("Closing connection");
 		connection.close();
+		log("Connection closed");
 	}
 
 	public String prompt() throws Exception {

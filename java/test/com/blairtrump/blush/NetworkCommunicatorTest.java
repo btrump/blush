@@ -26,7 +26,7 @@ public class NetworkCommunicatorTest {
 
 		boolean allMembersEqual = false;
 		if (server.getHost().equals(host) && server.getPort() == port
-				&& server.getQueue_name().equals(queue_name)) {
+				&& server.getQueue().equals(queue_name)) {
 			allMembersEqual = true;
 		}
 		assertTrue(allMembersEqual);
