@@ -12,7 +12,7 @@ public class Client extends NetworkCommunicator {
 	public Client() throws Exception {
 		super();
 	}
-	
+
 	public Client(NetworkCommunicator nc) {
 		port = nc.getPort();
 		host = nc.getHost();
@@ -24,15 +24,15 @@ public class Client extends NetworkCommunicator {
 		consumer = nc.consumer;
 		replyQueue = nc.replyQueue;
 	}
-	
+
 	public Packet generator(int i) {
 		System.out.println(i);
 		String message = null;
 		Packet.Type type = null;
 		Packet.Command command = null;
 		boolean valid;
-		
-		switch(i) {
+
+		switch (i) {
 		case 0:
 			// Test system status report
 			message = "I am requesting a status report";
@@ -41,6 +41,13 @@ public class Client extends NetworkCommunicator {
 			valid = true;
 			break;
 		case 1:
+			// Test connect to new instance
+			message = "Requesting connection to new instance";
+			type = Packet.Type.SYSTEM;
+			command = Packet.Command.CONNECT;
+			valid = true;
+			break;
+		case 2:
 			message = "This is a test application message";
 			type = Packet.Type.APPLICATION;
 			valid = true;
@@ -48,10 +55,10 @@ public class Client extends NetworkCommunicator {
 		default:
 			message = "You passed an invalid argument to the generator";
 			type = Packet.Type.INVALID;
-			 valid = false;
-			 break;
+			valid = false;
+			break;
 		}
-		
+
 		Packet packet = new Packet(type, message, command);
 		packet.setValidity(valid);
 		return packet;
@@ -61,8 +68,10 @@ public class Client extends NetworkCommunicator {
 		Packet packet = generator(Integer.parseInt(message));
 		String response = null;
 		String corrId = UUID.randomUUID().toString();
+		Date timestamp = new Date();
 		BasicProperties props = new BasicProperties.Builder()
-				.correlationId(corrId).replyTo(replyQueue).build();
+				.timestamp(timestamp).correlationId(corrId).replyTo(replyQueue)
+				.build();
 		System.out.format("\t[>] Sending message '%s' as packet '%s'\n",
 				message, packet.toJson());
 		channel.basicPublish("", queue, props, packet.toJson().getBytes());

@@ -14,7 +14,7 @@ public class Packet {
 	}
 
 	public enum Command {
-		CONNECT, DISCONNECT, STATUS, TALK, PING, PASSTHROUGH
+		CONNECT, DISCONNECT, STATUS, TALK, PING, PASSTHROUGH, LIST_INSTANCES
 	}
 
 	private Type type;

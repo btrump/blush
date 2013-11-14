@@ -126,14 +126,17 @@ public class NetworkCommunicator {
 				channel.basicQos(1);
 				consumer = new QueueingConsumer(channel);
 				channel.basicConsume(queue, false, consumer);
-				message = String.format("Connected to rabbitmq@%s:%s, consuming queue '%s'", getHost(), getPort(), getQueue());
+				message = String.format(
+						"Connected to rabbitmq@%s:%s, consuming queue '%s'",
+						getHost(), getPort(), getQueue());
 			} else {
 				replyQueue = channel.queueDeclare().getQueue();
 				consumer = new QueueingConsumer(channel);
 				channel.basicConsume(replyQueue, true, consumer);
 				message = String
 						.format("Connected to rabbitmq@%s:%s, consuming queue '%s' and reply queue '%s'",
-								getHost(), getPort(), getQueue(), getReplyQueue());
+								getHost(), getPort(), getQueue(),
+								getReplyQueue());
 			}
 			success = true;
 			log(message);
@@ -155,7 +158,6 @@ public class NetworkCommunicator {
 		log(message);
 		if (packet.isValid()) {
 			try {
-				// if system command, call appropriate function
 				if (packet.isSystem()) {
 					switch (packet.getCommand()) {
 					case CONNECT:

@@ -1,9 +1,17 @@
+/*
+ * The 'lobby' is the queue on the default channel on where clients and servers initially meet
+ * Client issues SYSTEM CONNECT request to server
+ * Server creates new queue, representing a new instances, and passes name to client
+ * Client now consumes on new instance queue
+ */
 package com.blairtrump.blush;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class Server extends NetworkCommunicator {
+	private Instance[] instance;
+	
 	public Server() {
 		super();
 	}
