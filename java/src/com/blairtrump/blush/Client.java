@@ -10,6 +10,30 @@ import java.io.InputStreamReader;
 import java.util.Properties;
 
 public class Client extends NetworkCommunicator {
+	public static void main(String[] argv) {
+		Client client = null;
+		try {
+			client = new Client();
+			client.initialize();
+			if (client.connect()) {
+				String message;
+				while (true) {
+					message = client.prompt();
+					client.call(message);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (client != null) {
+				try {
+					client.close();
+				} catch (Exception ignore) {
+				}
+			}
+		}
+	}
+
 	public Client() throws Exception {
 		super();
 	}
@@ -24,48 +48,6 @@ public class Client extends NetworkCommunicator {
 		factory = nc.factory;
 		consumer = nc.consumer;
 		replyQueue = nc.replyQueue;
-	}
-
-	public Packet generator(int i) {
-		System.out.println(i);
-		String message = null;
-		Packet.Type type = null;
-		Packet.Command command = null;
-		boolean valid;
-
-		switch (i) {
-		case 0:
-			// Test system status report
-			message = "I am requesting a status report";
-			type = Packet.Type.SYSTEM;
-			command = Packet.Command.STATUS;
-			valid = true;
-			break;
-		case 1:
-			// Test connect to new instance
-			Properties properties = new Properties();
-			String instanceId = "58008";
-			properties.put("instanceId", instanceId);
-			message = properties.toString();
-			type = Packet.Type.SYSTEM;
-			command = Packet.Command.CONNECT;
-			valid = true;
-			break;
-		case 2:
-			message = "This is a test application message";
-			type = Packet.Type.APPLICATION;
-			valid = true;
-			break;
-		default:
-			message = "You passed an invalid argument to the generator";
-			type = Packet.Type.INVALID;
-			valid = false;
-			break;
-		}
-
-		Packet packet = new Packet(type, message, command, this.getId());
-		packet.setValidity(valid);
-		return packet;
 	}
 
 	public String call(String message) throws Exception {
@@ -96,6 +78,51 @@ public class Client extends NetworkCommunicator {
 		log("Connection closed");
 	}
 
+	public Packet generator(int i) {
+		System.out.println(i);
+		Properties properties = new Properties();
+		String message = null;
+		Packet.Type type = null;
+		Packet.Command command = null;
+		boolean valid;
+
+		switch (i) {
+		case 0:
+			// Test system status report
+			properties.put("entity", "server");
+			message = properties.toString();
+			type = Packet.Type.SYSTEM;
+			command = Packet.Command.STATUS;
+			valid = true;
+			break;
+		case 1:
+			// Test system status report
+			properties.put("entity", "instance");
+			properties.put("id", "New-Instance_random_bits_here");
+			message = properties.toString();
+			type = Packet.Type.SYSTEM;
+			command = Packet.Command.STATUS;
+			valid = true;
+			break;
+		case 2:
+			// Test connect to new instance
+			message = "I'm attempting to connect to a new instance";
+			type = Packet.Type.SYSTEM;
+			command = Packet.Command.CONNECT;
+			valid = true;
+			break;
+		default:
+			message = "You passed an invalid argument to the generator";
+			type = Packet.Type.INVALID;
+			valid = false;
+			break;
+		}
+
+		Packet packet = new Packet(type, message, command, this.getId());
+		packet.setValidity(valid);
+		return packet;
+	}
+
 	public String prompt() throws Exception {
 		long timestamp = new Date().getTime();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -103,29 +130,5 @@ public class Client extends NetworkCommunicator {
 		String prompt = String.format("[%s] blush.Client~# ", timestamp);
 		System.out.print(prompt);
 		return reader.readLine();
-	}
-
-	public static void main(String[] argv) {
-		Client client = null;
-		try {
-			client = new Client();
-			client.initialize();
-			if (client.connect()) {
-				String message;
-				while (true) {
-					message = client.prompt();
-					client.call(message);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (client != null) {
-				try {
-					client.close();
-				} catch (Exception ignore) {
-				}
-			}
-		}
 	}
 }
