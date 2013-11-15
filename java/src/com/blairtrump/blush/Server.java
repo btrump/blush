@@ -125,9 +125,10 @@ public class Server extends NetworkCommunicator {
 		instance.connect(packet.getSenderId(), packet.getReplyQueue());
 		// add instance to instance map
 		instanceMap.put(instanceId, instance);
-		String message = String.format(
-				"Connecting client '%s' (rQ: %s) to new instance '%s'",
-				packet.getSenderId(), packet.getReplyQueue(), instanceName);
+		String message = String
+				.format("Connecting client '%s' (rQ: %s) to new instance '%s' with id '%s'",
+						packet.getSenderId(), packet.getReplyQueue(),
+						instanceName, instanceId);
 		log(message);
 		return instanceName;
 	}
@@ -143,8 +144,13 @@ public class Server extends NetworkCommunicator {
 					host, port, getStatus().toString(), queue);
 			break;
 		case "instance":
-			response = instanceMap.get(data.get("id")).toString();
-			//
+			if (data.get("id") == null) {
+				// if no id is specified, return instance map as string
+				response = instanceMap.toString();
+			} else {
+				// query specific instance
+				response = instanceMap.get(data.get("id")).toString();
+			}
 			break;
 		default:
 			break;
