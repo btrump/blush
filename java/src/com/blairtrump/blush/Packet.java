@@ -12,62 +12,12 @@ import com.google.gson.Gson;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class Packet {
-	public enum Type {
-		SYSTEM, APPLICATION, INVALID
-	}
-
 	public enum Command {
-		CONNECT, DISCONNECT, STATUS, TALK, PING, PASSTHROUGH, LIST_INSTANCES
+		CONNECT, DISCONNECT, LIST_INSTANCES, PASSTHROUGH, PING, STATUS, TALK
 	}
 
-	private Type type;
-	private String message;
-	private Command command;
-	private boolean valid = false;
-	private Integer senderId;
-	private Long timestamp;
-	private String replyQueue;
-
-	public Integer getSenderId() {
-		return senderId;
-	}
-
-	public void setSenderId(Integer senderId) {
-		this.senderId = senderId;
-	}
-
-	public Packet() {
-	}
-	
-	public Packet(QueueingConsumer.Delivery delivery) {
-		String payload = new String(delivery.getBody());
-		Packet packet = Packet.fromJson(payload);
-		this.type = packet.type;
-		this.message = packet.message;
-		this.command = packet.command;
-		this.senderId = packet.senderId;
-		this.timestamp = delivery.getProperties().getTimestamp().getTime();
-		this.replyQueue = delivery.getProperties().getReplyTo();
-	}
-
-	public String getReplyQueue() {
-		return replyQueue;
-	}
-
-	public void setReplyQueue(String replyQueue) {
-		this.replyQueue = replyQueue;
-	}
-
-	public Packet(Packet.Type type, String message, Command command, Integer senderId) {
-		this.type = type;
-		this.message = message;
-		this.command = command;
-		this.senderId = senderId;
-	}
-
-	public String toJson() {
-		Gson gson = new Gson();
-		return gson.toJson(this);
+	public enum Type {
+		APPLICATION, INVALID, SYSTEM
 	}
 
 	public static Packet fromJson(String json) {
@@ -81,37 +31,96 @@ public class Packet {
 		}
 		return packet;
 	}
+	private Command command;
+	private String message;
+	private String replyQueue;
+	private Long senderId;
+	private Long timestamp;
+	private Type type;
 
+	private boolean valid = false;
+	public Packet() {
+	}
+
+	public Packet(Packet.Type type, String message, Command command, Long senderId) {
+		this.type = type;
+		this.message = message;
+		this.command = command;
+		this.senderId = senderId;
+		timestamp = new Date().getTime();
+	}
+
+	public Packet(QueueingConsumer.Delivery delivery) {
+		String payload = new String(delivery.getBody());
+		Packet packet = Packet.fromJson(payload);
+		this.type = packet.type;
+		this.message = packet.message;
+		this.command = packet.command;
+		this.senderId = packet.senderId;
+		setTimestamp(delivery.getProperties().getTimestamp().getTime());
+		this.replyQueue = delivery.getProperties().getReplyTo();
+		this.setValidity(true);
+	}
+
+	public Packet.Command getCommand() {
+		return command;
+	}
+	
 	public String getMessage() {
 		return message;
+	}
+
+	public String getReplyQueue() {
+		return replyQueue;
+	}
+
+	public Long getSenderId() {
+		return senderId;
+	}
+
+	public Long getTimestamp() {
+		return timestamp;
 	}
 
 	public Packet.Type getType() {
 		return type;
 	}
-	
-	public Packet.Command getCommand() {
-		return command;
+
+	public boolean isSystem() {
+		return getType().equals(Type.SYSTEM);
 	}
 
 	public boolean isValid() {
 		return this.valid;
 	}
 
-	public void setValidity(boolean validity) {
-		this.valid = validity;
-	}
-
 	public void setMessage(String message) {
 		this.message = message;
+	}
+	
+	public void setReplyQueue(String replyQueue) {
+		this.replyQueue = replyQueue;
+	}
+
+	public void setSenderId(Long senderId) {
+		this.senderId = senderId;
+	}
+
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
 	}
 
 	public void setType(Type type) {
 		this.type = type;
 	}
+
+	public void setValidity(boolean validity) {
+		this.valid = validity;
+	}
 	
-	public boolean isSystem() {
-		return getType().equals(Type.SYSTEM);
+	public String toJson() {
+		Gson gson = new Gson();
+		return gson.toJson(this);
 	}
 
 	public String toString() {

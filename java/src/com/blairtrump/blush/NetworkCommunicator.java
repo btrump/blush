@@ -15,10 +15,10 @@ public class NetworkCommunicator {
 	protected QueueingConsumer consumer;
 	protected ConnectionFactory factory;
 	protected String host;
+	protected Long id;
 	protected Integer port;
 	protected String queue;
 	protected String replyQueue;
-	protected Integer id;
 
 	protected NetworkStatus status;
 
@@ -70,6 +70,10 @@ public class NetworkCommunicator {
 		return host;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
 	public int getPort() {
 		return port;
 	}
@@ -90,19 +94,11 @@ public class NetworkCommunicator {
 		String host = "localhost";
 		int port = 5672;
 		String queue_name = "lobby";
-		int id = new Random(new Date().getTime()).nextInt();
+		Long id = (long) new Random(new Date().getTime()).nextInt();
 		this.initialize(host, port, queue_name, id);
 	}
 
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public void initialize(String host, int port, String lobby, int id) {
+	public void initialize(String host, int port, String lobby, Long id) {
 		setStatus(NetworkStatus.INITALIZING);
 		this.connection = null;
 		this.channel = null;
@@ -145,6 +141,10 @@ public class NetworkCommunicator {
 	public void setHost(String host) {
 		this.host = host;
 		this.factory.setHost(host);
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public void setPort(int port) {

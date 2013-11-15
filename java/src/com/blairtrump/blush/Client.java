@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Properties;
 
 public class Client extends NetworkCommunicator {
 	public Client() throws Exception {
@@ -42,7 +43,10 @@ public class Client extends NetworkCommunicator {
 			break;
 		case 1:
 			// Test connect to new instance
-			message = "Requesting connection to new instance";
+			Properties properties = new Properties();
+			String instanceId = "58008";
+			properties.put("instanceId", instanceId);
+			message = properties.toString();
 			type = Packet.Type.SYSTEM;
 			command = Packet.Command.CONNECT;
 			valid = true;

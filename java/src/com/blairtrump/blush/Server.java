@@ -43,8 +43,8 @@ public class Server extends NetworkCommunicator {
 	 * @return the response of the handling subfunction as a string
 	 */
 	protected String handleMessage(QueueingConsumer.Delivery delivery) {
-		String payload = new String(delivery.getBody());
-		Packet packet = Packet.fromJson(payload);
+//		String payload = new String(delivery.getBody());
+		Packet packet = new Packet(delivery);
 		String response = "";
 		String message = String.format("Got packet: %s", packet.toString());
 		log(message);
@@ -72,10 +72,7 @@ public class Server extends NetworkCommunicator {
 				}
 				// if application, automatically pass message through
 			} catch (Exception e) {
-//				System.err.format("[%s] %s::handleMessage() - %s\n", new Date()
-//						.getTime(), this.getClass().getCanonicalName(), e.getStackTrace());
-				StackTraceElement[] elements = e.getStackTrace();
-				System.err.println(e.getStackTrace());
+				System.err.println(e);
 			}
 		}
 
@@ -97,7 +94,7 @@ public class Server extends NetworkCommunicator {
 		Instance instance = new Instance(instanceName);
 		instance.connect(packet.getSenderId(), packet.getReplyQueue());
 		instanceMap.put(instanceId, instance);
-		String message = String.format("Connecting client '%s' (rQ: %s) to new instance '%s'\n", packet.getSenderId(), packet.getReplyQueue(), instanceName);
+		String message = String.format("Connecting client '%s' (rQ: %s) to new instance '%s'", packet.getSenderId(), packet.getReplyQueue(), instanceName);
 		log(message);
 		return instanceName;
 	}

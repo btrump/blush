@@ -12,7 +12,7 @@ public class NetworkCommunicatorTest {
 		String host = "fake.example.com";
 		int port = -1;
 		String queue_name = testString;
-		int id = 0;
+		Long id = new Long(0);
 		communicator.initialize(host, port, queue_name, id);
 		return communicator;
 	}
@@ -23,7 +23,7 @@ public class NetworkCommunicatorTest {
 		String host = "localhost";
 		int port = 5672;
 		String queue_name = "lobby";
-		int id = 0;
+		Long id = new Long(0);
 		server.initialize(host, port, queue_name, id);
 
 		boolean allMembersEqual = false;
