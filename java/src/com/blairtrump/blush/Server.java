@@ -17,6 +17,25 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class Server extends NetworkCommunicator {
+	private Map<Long, Instance> instanceMap;
+
+	public Server() {
+		super();
+		instanceMap = new HashMap<Long, Instance>();
+	}
+
+	public Server(NetworkCommunicator nc) {
+		port = nc.getPort();
+		host = nc.getHost();
+		status = nc.getStatus();
+		queue = nc.getQueue();
+		connection = nc.connection;
+		channel = nc.channel;
+		factory = nc.factory;
+		consumer = nc.consumer;
+		replyQueue = nc.replyQueue;
+	}
+
 	public static void main(String[] args) throws Exception {
 		Server server = new Server();
 		server.initialize();
@@ -52,25 +71,6 @@ public class Server extends NetworkCommunicator {
 		return data;
 	}
 
-	private Map<Long, Instance> instanceMap;
-
-	public Server() {
-		super();
-		instanceMap = new HashMap<Long, Instance>();
-	}
-
-	public Server(NetworkCommunicator nc) {
-		port = nc.getPort();
-		host = nc.getHost();
-		status = nc.getStatus();
-		queue = nc.getQueue();
-		connection = nc.connection;
-		channel = nc.channel;
-		factory = nc.factory;
-		consumer = nc.consumer;
-		replyQueue = nc.replyQueue;
-	}
-
 	/**
 	 * @param delivery
 	 *            The encapsulated message.
@@ -98,6 +98,7 @@ public class Server extends NetworkCommunicator {
 						response = handlePacketStatus(packet);
 						break;
 					case TALK:
+						response = handlePacketTalk(packet);
 						break;
 					default:
 						break;
@@ -146,16 +147,33 @@ public class Server extends NetworkCommunicator {
 		case "instance":
 			if (data.get("id") == null) {
 				// if no id is specified, return instance map as string
-				response = instanceMap.toString();
+				response = getInstanceMapAsString();
 			} else {
 				// query specific instance
-				response = instanceMap.get(data.get("id")).toString();
+				response = instanceMap.get(Long.parseLong(data.get("id"))).toString();
 			}
 			break;
 		default:
 			break;
 		}
 		return response;
+	}
+
+	private String handlePacketTalk(Packet packet) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public String getInstanceMapAsString() {
+		String string = String.format("%s instance%s\n", instanceMap.size(), instanceMap.size() > 1 ? "s" : "");
+		int i = 1;
+		for(Map.Entry<Long, Instance> instance : instanceMap.entrySet()) {
+			string += String.format("%s - %s", i++, instance.toString());
+			if(i <= instanceMap.size()) {
+				string += "\n";
+			}
+		}
+		return string;
 	}
 
 	public void listen() {

@@ -19,7 +19,17 @@ public class Client extends NetworkCommunicator {
 				String message;
 				while (true) {
 					message = client.prompt();
-					client.call(message);
+					String[] messageArray = message.split(":");
+					String args = null;
+					try {
+						int packetId = Integer.parseInt(messageArray[0]);
+						if(messageArray.length > 1) {
+							args = messageArray[1];
+						}
+						client.handleCommand(packetId, args);
+					} catch (Exception e) {
+						errorlog("Invalid command format", e);
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -50,16 +60,15 @@ public class Client extends NetworkCommunicator {
 		replyQueue = nc.replyQueue;
 	}
 
-	public String call(String message) throws Exception {
-		Packet packet = generator(Integer.parseInt(message));
+	public String call(Packet packet) throws Exception {
 		String response = null;
 		String corrId = UUID.randomUUID().toString();
 		Date timestamp = new Date();
 		BasicProperties props = new BasicProperties.Builder()
 				.timestamp(timestamp).correlationId(corrId).replyTo(replyQueue)
 				.build();
-		System.out.format("\t[>] Sending message '%s' as packet '%s'\n",
-				message, packet.toJson());
+		System.out.format("\t[>] Sending packet '%s'\n",
+				packet.toJson());
 		channel.basicPublish("", queue, props, packet.toJson().getBytes());
 		while (true) {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
@@ -78,47 +87,88 @@ public class Client extends NetworkCommunicator {
 		log("Connection closed");
 	}
 
-	public Packet generator(int i) {
-		System.out.println(i);
-		Properties properties = new Properties();
+	public Packet buildPacketConnect() {
 		String message = null;
-		Packet.Type type = null;
-		Packet.Command command = null;
-		boolean valid;
+		Packet.Type type = Packet.Type.SYSTEM;
+		Packet.Command command = Packet.Command.CONNECT;
+		Boolean valid = true;
+		Packet packet = new Packet(type, message, command, getId());
+		packet.setValidity(valid);
+		return packet;
+	}
 
+	public void handleCommand(int i, String arg) throws Exception {
 		switch (i) {
 		case 0:
-			// Test system status report
-			properties.put("entity", "server");
-			message = properties.toString();
-			type = Packet.Type.SYSTEM;
-			command = Packet.Command.STATUS;
-			valid = true;
+			// Connect
+			call(buildPacketConnect());
 			break;
 		case 1:
-			// Test system status report
-			properties.put("entity", "instance");
-			properties.put("id", "New-Instance_random_bits_here");
-			message = properties.toString();
-			type = Packet.Type.SYSTEM;
-			command = Packet.Command.STATUS;
-			valid = true;
+			// Query Server
+			call(buildPacketStatusServer());
 			break;
 		case 2:
-			// Test connect to new instance
-			message = "I'm attempting to connect to a new instance";
-			type = Packet.Type.SYSTEM;
-			command = Packet.Command.CONNECT;
-			valid = true;
+			// Query all Instances
+			call(buildPacketStatusInstances());
+			break;
+		case 3:
+			// Query Instance
+			call(buildPacketStatusInstance(Long.parseLong(arg)));
 			break;
 		default:
-			message = "You passed an invalid argument to the generator";
-			type = Packet.Type.INVALID;
-			valid = false;
 			break;
 		}
+	}
 
-		Packet packet = new Packet(type, message, command, this.getId());
+	public Packet buildPacketStatusServer() {
+		String message = null;
+		Packet.Type type = Packet.Type.SYSTEM;
+		Packet.Command command = Packet.Command.STATUS;
+		Boolean valid = true;
+		Properties properties = new Properties();
+		properties.put("entity", "server");
+		message = properties.toString();
+		Packet packet = new Packet(type, message, command, getId());
+		packet.setValidity(valid);
+		return packet;
+	}
+
+	public Packet buildPacketStatusInstances() { 
+		String message = null;
+		Packet.Type type = Packet.Type.SYSTEM;
+		Packet.Command command = Packet.Command.STATUS;
+		Boolean valid = true;
+		Properties properties = new Properties();
+		properties.put("entity", "instance");
+		message = properties.toString();
+		Packet packet = new Packet(type, message, command, getId());
+		packet.setValidity(valid);
+		return packet;
+	}
+	
+	public Packet buildPacketStatusInstance(Long instanceId) {
+		String message = null;
+		Packet.Type type = Packet.Type.SYSTEM;
+		Packet.Command command = Packet.Command.STATUS;
+		Boolean valid = true;
+		Properties properties = new Properties();
+		properties.put("entity", "instance");
+		properties.put("id", instanceId);
+		message = properties.toString();
+		Packet packet = new Packet(type, message, command, getId());
+		packet.setValidity(valid);
+		return packet;
+	}
+	
+	public Packet buildPacketTalk(String s) {
+		String message = null;
+		Packet.Type type = Packet.Type.SYSTEM;
+		Packet.Command command = Packet.Command.TALK;
+		Boolean valid = true;
+		Properties properties = new Properties();
+		properties.put("message", s);
+		message = properties.toString();
+		Packet packet = new Packet(type, message, command, getId());
 		packet.setValidity(valid);
 		return packet;
 	}

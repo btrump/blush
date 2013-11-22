@@ -114,7 +114,7 @@ public class NetworkCommunicator {
 		return connected;
 	}
 
-	public void log(String message) {
+	public static void log(String message) {
 		String callingMethod = Thread.currentThread().getStackTrace()[2]
 				.getMethodName() + "()";
 		String[] canonicalClassName = Thread.currentThread().getStackTrace()[2]
@@ -122,6 +122,17 @@ public class NetworkCommunicator {
 		String className = canonicalClassName[canonicalClassName.length - 1];
 		System.out.format("[%s] %s::%s - %s\n", new Date().getTime(),
 				className, callingMethod, message);
+	}
+	
+	public static void errorlog(String errorMessage, Exception e) {
+		String callingMethod = Thread.currentThread().getStackTrace()[2]
+				.getMethodName() + "()";
+		String[] canonicalClassName = Thread.currentThread().getStackTrace()[2]
+				.getClassName().split("\\.");
+		String className = canonicalClassName[canonicalClassName.length - 1];
+		System.err.format("[%s] %s::%s - %s\n", new Date().getTime(),
+				className, callingMethod, errorMessage);
+		e.printStackTrace(System.err);
 	}
 
 	public String reportStatus() {
